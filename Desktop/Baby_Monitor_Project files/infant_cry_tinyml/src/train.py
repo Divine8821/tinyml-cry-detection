@@ -1,35 +1,48 @@
 import numpy as np
-from dataset import load_dataset
-from sklearn.model_selection import train_test_split
+from dataset import load_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 import joblib
 
-# Paths
-cry_path = "data/cry"
-noncry_path = "data/noncry"
+# Load datasets
+X_train, y_train = load_split("data/train")
+X_val, y_val = load_split("data/validation")
+X_test, y_test = load_split("data/test")
 
-# Load dataset
-X, y = load_dataset(cry_path, noncry_path)
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
 
-X = np.array(X)
-y = np.array(y)
+y_train = np.array(y_train)
+y_val = np.array(y_val)
+y_test = np.array(y_test)
 
-# Normalize features
+# Normalize
 scaler = StandardScaler()
-X = scaler.fit_transform(X)
-
-# Split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train = scaler.fit_transform(X_train)
+X_val = scaler.transform(X_val)
+X_test = scaler.transform(X_test)
 
 # Train model
-model = LogisticRegression()
+model = LogisticRegression(class_weight='balanced')
 model.fit(X_train, y_train)
 
-# Evaluate
-pred = model.predict(X_test)
-print(classification_report(y_test, pred))
+# 🔍 VALIDATION (for tuning)
+print("\nValidation Results:")
+val_probs = model.predict_proba(X_val)[:,1]
+threshold = 0.45  
+val_pred = (val_probs > threshold).astype(int)
+print(classification_report(y_val, val_pred))
+
+# Save threshold
+joblib.dump(threshold, "model/threshold.pkl")
+print(f"Saved threshold: {threshold}")
+
+# 🔍 TEST (final evaluation)
+print("\nTest Results:")
+test_pred = model.predict(X_test)
+print(classification_report(y_test, test_pred))
 
 # Save model
 joblib.dump(model, "model/model.pkl")

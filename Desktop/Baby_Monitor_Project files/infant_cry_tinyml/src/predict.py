@@ -1,9 +1,10 @@
 import numpy as np
 import joblib
-from src.feature_extraction import extract_features
+from feature_extraction import extract_features
 
 model = joblib.load("model/model.pkl")
 scaler = joblib.load("model/scaler.pkl")
+threshold = joblib.load("model/threshold.pkl")
 
 def predict_file(file):
     features = extract_features(file)
@@ -11,9 +12,9 @@ def predict_file(file):
     
     features = scaler.transform(features)
     
-    prediction = model.predict(features)
+    proba = model.predict_proba(features)[0][1]
     
-    if prediction[0] == 1:
+    if proba > threshold:
         return "CRY DETECTED"
     else:
         return "NOT CRY"
