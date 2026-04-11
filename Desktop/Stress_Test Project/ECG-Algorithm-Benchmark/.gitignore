@@ -1,0 +1,16 @@
+# .gitignore
+# Data files (Too large for GitHub)
+data/
+
+# Python artifacts
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment
+.env
+venv/
+.vscode/
+
+# Results (Optional: keep if you want others to see them immediately)
+# results/
